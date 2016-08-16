@@ -17,7 +17,18 @@
 http://developer.xg.qq.com/wiki/xg/%E6%9C%8D%E5%8A%A1%E7%AB%AFAPI%E6%8E%A5%E5%85%A5/Rest%20API%20%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/Rest%20API%20%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97.html
 
 
-Demo Code:
+### Examples
+
+```go
+import (
+   "fmt"
+   "xinge"
+)
+
+var (
+	 c_Block chan int
+)
+
 func test_pushmsg_xg(c <-chan int) {
   cli := xinge.NewClient(22002*****, "a2bbd4b3a8ae5195d7e4c97b753*****")
   cli.PushSingleIosAccount("4de86b5aceb579c4a7689fc79ab46d0fb******", "你有一个新的未读消息", 6, nil)
@@ -32,4 +43,5 @@ func main() {
 	fmt.Println("test end.")
 	return
 }
+```
 --------------------
