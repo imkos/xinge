@@ -1,5 +1,6 @@
 package xinge
-import(
+
+import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -16,56 +17,62 @@ type Client struct {
 	accessId  int
 	secretKey string
 }
+
 //推送给单个设备
-func (c *Client) PushSingleDevice(deviceType int,deviceToken string, message CommonMessage) Response {
+func (c *Client) PushSingleDevice(deviceType int, deviceToken string, message CommonMessage) Response {
 	params := make(map[string]interface{})
 	params["device_token"] = deviceToken
 	params["message"] = string(message.XGjson())
-	res := c.push(deviceType,RESTAPI_PUSHSINGLEDEVICE,params)
+	res := c.push(deviceType, RESTAPI_PUSHSINGLEDEVICE, params)
 	return res
 }
+
 //推送给单个账户或别名
 func (c *Client) PushSingleAccount(deviceType int, account string, message CommonMessage) Response {
 	params := make(map[string]interface{})
 
 	params["account"] = account
 	params["message"] = string(message.XGjson())
-	res := c.push(deviceType,RESTAPI_PUSHSINGLEACCOUNT,params)
+	res := c.push(deviceType, RESTAPI_PUSHSINGLEACCOUNT, params)
 	return res
 }
+
 //推送给多个账户 最多100个
 func (c *Client) PushAccountList(deviceType int, accountList []string, message CommonMessage) Response {
 	params := make(map[string]interface{})
 
-	account_list,err := json.Marshal(accountList)
-	if(err != nil){
+	account_list, err := json.Marshal(accountList)
+	if err != nil {
 
 	}
 	params["account_list"] = string(account_list)
 	params["message"] = string(message.XGjson())
-	res := c.push(deviceType,RESTAPI_PUSHACCOUNTLIST,params)
+	res := c.push(deviceType, RESTAPI_PUSHACCOUNTLIST, params)
 	return res
 }
+
 //推送给所有设备
 func (c *Client) PushAllDevices(deviceType int, message CommonMessage) Response {
 	params := make(map[string]interface{})
 
 	params["message"] = string(message.XGjson())
-	res := c.push(deviceType,RESTAPI_PUSHALLDEVICE,params)
+	res := c.push(deviceType, RESTAPI_PUSHALLDEVICE, params)
 	return res
 }
+
 //拼接公共参数
-func (c *Client) push(deviceType int ,uri string, params map[string]interface{}) Response {
+func (c *Client) push(deviceType int, uri string, params map[string]interface{}) Response {
 	switch deviceType {
 	case Android:
-		params["multi_pkg"] = 1 //0表示按注册时提供的包名分发消息；1表示按access id分发消息，所有以该access id成功注册推送的app均可收到消息。本字段对iOS平台无效
+		params["multi_pkg"] = 1    //0表示按注册时提供的包名分发消息；1表示按access id分发消息，所有以该access id成功注册推送的app均可收到消息。本字段对iOS平台无效
 		params["message_type"] = 1 //消息类型：1：通知 2：透传消息。iOS平台请填0
 	case Ios:
 		params["message_type"] = 0 //消息类型：1：通知 2：透传消息。iOS平台请填0
-		params["environment"] = 2	//向iOS设备推送时必填，1表示推送生产环境；2表示推送开发环境。推送Android平台不填或填0
+		params["environment"] = 1  //向iOS设备推送时必填，1表示推送生产环境；2表示推送开发环境。推送Android平台不填或填0
 	}
 	params["expire_time"] = 300
-	params["send_time"] = time.Now().Unix()
+	//最新Restful API 显示send_time 的值类型为string.
+	params["send_time"] = time.Now().Format("2006-01-02 15:04:05")
 	params["timestamp"] = time.Now().Unix()
 	params["access_id"] = c.accessId
 
@@ -73,6 +80,7 @@ func (c *Client) push(deviceType int ,uri string, params map[string]interface{})
 
 	return c.send(uri, params)
 }
+
 //发送请求
 func (c *Client) send(uri string, params map[string]interface{}) Response {
 	var res Response = newResponse()
@@ -80,7 +88,10 @@ func (c *Client) send(uri string, params map[string]interface{}) Response {
 	for k, v := range params {
 		data = append(data, fmt.Sprintf("%s=%v", k, v))
 	}
-	d := strings.Join(data, "&")
+	//K.o.s fix x-www-form-urlencoded 未urlencode的bug
+	//d := strings.Join(data, "&")
+	pl, _ := url.ParseQuery(strings.Join(data, "&"))
+	d := pl.Encode()
 	fmt.Println(d)
 	r, err := http.Post(uri, "application/x-www-form-urlencoded", strings.NewReader(d))
 	if err != nil {
