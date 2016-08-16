@@ -11,7 +11,7 @@ const (
 	ACTION_TYPE_INTENT   int = 3
 
 	Android int = 1
-	Ios int = 2
+	Ios     int = 2
 
 	MESSAGE_TYPE_NOTIFICATION int = 1
 	MESSAGE_TYPE_MESSAGE      int = 2
@@ -200,38 +200,38 @@ func (m *Message) JsonAction() map[string]interface{} {
 //ios推送定义
 
 type Aps struct {
-	Alert string
-	Badge int
+	Alert string `json:"alert"`
+	Badge int    `json:"badge"`
 }
 
 type IosMessage struct {
-	Aps Aps `json:"aps"`
-	AcceptTime   []TimeInterval    `json:"acceptTime"`
-	Custom       map[string]string `json:"custom"`
+	Aps        Aps               `json:"aps"`
+	AcceptTime []TimeInterval    `json:"acceptTime"`
+	Custom     map[string]string `json:"custom"`
 }
 
 func NewIosMessage() *IosMessage {
 	return &IosMessage{
 		AcceptTime: make([]TimeInterval, 0),
-		Custom : make(map[string]string, 0),
-		Aps : Aps{},
+		Custom:     make(map[string]string, 0),
+		Aps:        Aps{},
 	}
 }
-func (i *IosMessage)SetAps(title string,badge int){
-	aps := Aps{Alert:title,Badge:badge}
+func (i *IosMessage) SetAps(title string, badge int) {
+	aps := Aps{Alert: title, Badge: badge}
 	i.Aps = aps
 }
 func (i *IosMessage) AddAcceptTime(acceptTime TimeInterval) {
 	i.AcceptTime = append(i.AcceptTime, acceptTime)
 }
 
-func (i *IosMessage)XGjson() []byte {
+func (i *IosMessage) XGjson() []byte {
 	result := make(map[string]interface{})
 
 	result["aps"] = i.Aps
-
-	result["custom1"] = i.Custom
-
+	if i.Custom != nil {
+		result["custom1"] = i.Custom
+	}
 	ret, err := json.Marshal(result)
 	if err != nil {
 		return nil
@@ -241,10 +241,10 @@ func (i *IosMessage)XGjson() []byte {
 }
 
 type CommonMessage interface {
-	XGjson()[]byte
+	XGjson() []byte
 }
 
-func DefaultMessage(title ,content string) *Message{
+func DefaultMessage(title, content string) *Message {
 	message := NewMessage()
 	message.Title = title
 	message.Content = content
@@ -260,12 +260,10 @@ func DefaultMessage(title ,content string) *Message{
 	return message
 }
 
-func DefaultIosMessage(title string,badge int) *IosMessage{
+func DefaultIosMessage(title string, badge int) *IosMessage {
 	iosmessage := NewIosMessage()
 	iosmessage.Aps.Alert = title
 	iosmessage.Aps.Badge = badge
 	iosmessage.AddAcceptTime(TimeInterval{0, 0, 23, 59})
 	return iosmessage
 }
-
-
