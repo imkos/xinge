@@ -199,9 +199,14 @@ func (m *Message) JsonAction() map[string]interface{} {
 
 //ios推送定义
 
+type Aps_body struct {
+	Body   string `json:"body"`
+	Action string `json:"action-loc-key"`
+}
+
 type Aps struct {
-	Alert string `json:"alert"`
-	Badge int    `json:"badge"`
+	Alert Aps_body `json:"alert"`
+	Badge int      `json:"badge"`
 }
 
 type IosMessage struct {
@@ -214,11 +219,11 @@ func NewIosMessage() *IosMessage {
 	return &IosMessage{
 		AcceptTime: make([]TimeInterval, 0),
 		Custom:     make(map[string]string, 0),
-		Aps:        Aps{},
+		Aps:        Aps{Alert: Aps_body{Action: "PLAY"}},
 	}
 }
 func (i *IosMessage) SetAps(title string, badge int) {
-	aps := Aps{Alert: title, Badge: badge}
+	aps := Aps{Alert: Aps_body{Body: title}, Badge: badge}
 	i.Aps = aps
 }
 func (i *IosMessage) AddAcceptTime(acceptTime TimeInterval) {
@@ -262,7 +267,7 @@ func DefaultMessage(title, content string) *Message {
 
 func DefaultIosMessage(title string, badge int) *IosMessage {
 	iosmessage := NewIosMessage()
-	iosmessage.Aps.Alert = title
+	iosmessage.Aps.Alert.Body = title
 	iosmessage.Aps.Badge = badge
 	iosmessage.AddAcceptTime(TimeInterval{0, 0, 23, 59})
 	return iosmessage
