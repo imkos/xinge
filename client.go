@@ -92,7 +92,7 @@ func (c *Client) send(uri string, params map[string]interface{}) Response {
 	//d := strings.Join(data, "&")
 	pl, _ := url.ParseQuery(strings.Join(data, "&"))
 	d := pl.Encode()
-	fmt.Println(d)
+	//fmt.Println(d)
 	r, err := http.Post(uri, "application/x-www-form-urlencoded", strings.NewReader(d))
 	if err != nil {
 		panic(err)
